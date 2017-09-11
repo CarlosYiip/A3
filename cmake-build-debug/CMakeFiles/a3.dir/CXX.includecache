@@ -6,7 +6,21 @@
 
 #IncludeRegexTransform: 
 
-/Users/carlosye/Desktop/COMP6771/a3/main.cpp
+/Users/carlosye/Desktop/COMP6771/a3/Graph.h
+vector
+-
 memory
 -
+iostream
+-
+algorithm
+-
+Graph.tem
+/Users/carlosye/Desktop/COMP6771/a3/Graph.tem
+
+/Users/carlosye/Desktop/COMP6771/a3/Graph.tem
+
+/Users/carlosye/Desktop/COMP6771/a3/main.cpp
+Graph.h
+/Users/carlosye/Desktop/COMP6771/a3/Graph.h
 

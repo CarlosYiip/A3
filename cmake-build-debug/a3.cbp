@@ -82,6 +82,9 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/Users/carlosye/Desktop/COMP6771/a3/Graph.h">
+			<Option target="a3"/>
+		</Unit>
 		<Unit filename="/Users/carlosye/Desktop/COMP6771/a3/main.cpp">
 			<Option target="a3"/>
 		</Unit>

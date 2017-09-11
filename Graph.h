@@ -55,7 +55,7 @@ namespace gdwg {
 
         class Edge {
         public:
-            Edge(const N&, const N&, const E&);
+            Edge(const std::shared_ptr<Node>&, const std::shared_ptr<Node>&, const E&);
             const N& get_src_data() const;
             const N& get_dst_data() const;
             const E& get_weight() const;
