@@ -1,0 +1,95 @@
+/************************************************* Graph **************************************************/
+
+template <typename N, typename E>
+bool Graph<N, E>::node_existed(const N &val) const {
+    auto existed = std::find_if(nodes.cbegin(), nodes.cend(), [&val] (const Node& node) {
+        return node.get_data() == val;
+    });
+
+    return existed != nodes.cend();
+};
+
+template <typename N, typename E>
+bool Graph<N, E>::edge_existed(const N& src, const N& dst, const E& w) const {
+    auto existed = std::find_if(edges.cbegin(), edges.cend(), [&src, &dst, &w] (const Edge& edge) {
+        bool b1 = src == edge.get_src_data();
+        bool b2 = dst == edge.get_dst_data();
+        bool b3 = w == edge.get_weight();
+        return b1 && b2 && b3;
+    });
+
+    return existed != edges.cend();
+};
+
+template <typename N, typename E>
+bool Graph<N, E>::addNode(const N &val) {
+
+    if (node_existed(val))
+        return false;
+
+    Node new_node{val};
+    nodes.push_back(new_node);
+
+    return true;
+}
+
+template <typename N, typename E>
+bool Graph<N, E>::addEdge(const N& src, const N& dst, const E& w) {
+    if (edge_existed(src, dst, w)) {
+        std::cout << "!";
+        return true;
+    }
+
+    Edge newEdge{src, dst, w};
+    edges.push_back(newEdge);
+
+    return true;
+};
+
+
+/************************************************* Node **************************************************/
+
+template <typename N, typename E>
+Graph<N, E>::Node::Node(const N& val) : data_ptr{std::make_shared<N>(val)} {};
+
+template <typename N, typename E>
+const N& Graph<N, E>::Node::get_data() const {
+    return *data_ptr;
+};
+
+
+
+/************************************************* Edge **************************************************/
+
+
+
+
+template <typename N, typename E>
+Graph<N, E>::Edge::Edge(const N& src, const N& dst, const E& w) : src_ptr{src}, dst_ptr{dst}, weight{w} {};
+
+template <typename N, typename E>
+const N& Graph<N, E>::Edge::get_src_data() const { return src_ptr.lock()->get_data(); };
+
+template <typename N, typename E>
+const N& Graph<N, E>::Edge::get_dst_data() const { return dst_ptr.lock()->get_data(); };
+
+template <typename N, typename E>
+const E& Graph<N, E>::Edge::get_weight() const {return weight; };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
