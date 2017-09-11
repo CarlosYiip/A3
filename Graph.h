@@ -8,6 +8,8 @@
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <algorithm>
+
 
 namespace gdwg {
 
@@ -29,6 +31,9 @@ namespace gdwg {
         bool addEdge(const N&, const N&, const E&);
 
 
+    
+
+
     private:
 
         bool node_existed(const N&) const;
@@ -41,7 +46,7 @@ namespace gdwg {
             const N& get_data() const;
 
         private:
-            std::shared_ptr<N> data_ptr;
+            std::unique_ptr<N> data_ptr;
             unsigned in_degree = 0u;
             unsigned out_degree = 0u;
 
@@ -62,9 +67,11 @@ namespace gdwg {
         };
 
 
-        std::vector<std::share_ptr<Node>> nodes;
-        std::vector<std::weak_ptr<Edge>> edges;
+        std::vector<std::shared_ptr<Node>> nodes_sp;
+        std::vector<Edge> edges;
     };
+
+
     #include "Graph.tem"
 }
 
