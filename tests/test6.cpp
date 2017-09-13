@@ -1,32 +1,48 @@
+//
+// Created by carlos on 9/13/17.
+//
+
+// test for mergeReplace
+
 #include "Graph.h"
 
-// create a graph
-// add 10000 -> 1 nodes
-// delete 1 -> 5000 nodes
-// add -5000 -> -1 nodes
-// add edge -5000 to -1
-// add edge -5000 to 5000
-// print edges
 
 int main() {
-	
-	gdwg::Graph<int,int> g;
-	
-	for (int i = 10000; i > 0; --i) {
-		g.addNode(i);
-	}
-	
-	for (int i = 0; i < 5000; ++i) {
-		g.deleteNode(i);
-	}
-	
-	for (int i = -1; i > -5000; --i) {
-		g.addNode(i);
-	}
-	
-	g.addEdge(-4999,-1,2);
-	g.addEdge(-4999,10000,3);
-	
-	g.printEdges(-4999);
+
+    // make a graph
+    gdwg::Graph<unsigned int,std::string> g;
+
+    g.addNode(1);
+    g.addNode(2);
+    g.addNode(3);
+    g.addNode(4);
+
+    g.addEdge(1,2,"1->2");
+    g.addEdge(2,3,"2->3");
+    g.addEdge(2,4,"2->4");
+    g.addEdge(3,2,"3->2");
+    g.addEdge(3,4,"3->4");
+    g.addEdge(2,4,"cs6771");
+    g.addEdge(3,4,"cs6771");
+
+    std::cout << "Before calling mergReplace(2,3)" << std::endl;
+    g.printEdges(1);
+    g.printEdges(2);
+    g.printEdges(3);
+    g.printEdges(4);
+
+    g.mergeReplace(2,3);
+
+    std::cout << std::endl << "After calling mergReplace(2,3)" << std::endl;
+    g.printEdges(1);
+    std::cout << "checking that node 2 has been destroyed" << std::endl;
+    try {
+        g.printEdges(2);
+    } catch( const std::exception &ex ) {
+        std::cout << "exception caught" << std::endl;
+    }
+    g.printEdges(3);
+    g.printEdges(4);
 }
+
 

@@ -1,36 +1,38 @@
+//
+// Created by carlos on 9/13/17.
+//
+// test 8: tests copy construction
+
 #include "Graph.h"
 
 int main() {
-    gdwg::Graph<std::string, int> g1{};
-    std::string s = "a";
-    g1.addNode(s);
-    g1.addNode("zzz");
-    g1.addNode("b");
-    g1.addNode("a");
-    g1.addNode("cd");
-//    g1.addEdge("a", "zzz", 30);
-//    g1.addEdge("a", "b", 10);
-//    g1.addEdge("cd", "ab", 10);
-//
-//    g1.replace("a", "!!");
-//    g1.mergeReplace("!!", "zzz");
-//    g1.deleteNode("b");
-//    g1.deleteEdge("a", "c");
-//
-    g1.printNodes();
-//    g1.printEdges("zzz");
-//    g1.printEdges("cd");
+    auto gHeap = new gdwg::Graph<std::string,int>{};
 
+    // add this data into the graph
+    gHeap->addNode("a");
+    gHeap->addNode("b");
+    gHeap->addNode("c");
+    gHeap->addNode("d");
 
-//    std::vector<int> v {1,2,3,4,5,6};
-//
-//    auto it = std::lower_bound(v.begin(),v.end(),3);
-//
-//    v.insert(it, 3);
-//
-//
-//    for (auto i : v)
-//        std::cout << i << '\n';
+    gHeap->addEdge("b","a",3);
+    gHeap->addEdge("b","a",5);
+    gHeap->addEdge("b","d",4);
+    gHeap->addEdge("c","a",3);
 
-    return 0;
+    std::cout << "original graph" << std::endl;
+    gHeap->printNodes();
+    gHeap->printEdges("b");
+
+    auto gHeapCopy = *gHeap;
+    gHeap->deleteNode("a");
+    std::cout << "original graph after delete" << std::endl;
+    gHeap->printNodes();
+    gHeap->printEdges("b");
+    std::cout << "copied graph after delete in other graph" << std::endl;
+    gHeapCopy.printNodes();
+    gHeapCopy.printEdges("b");
+
+    delete gHeap;
+    std::cout << "copied graph after other graph is deleted" << std::endl;
+    gHeapCopy.printNodes();
 }

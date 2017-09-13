@@ -1,73 +1,79 @@
-#include <random>
-#include <vector>
-#include <algorithm>
-#include <sstream>
+//
+// Created by carlos on 9/13/17.
+//
+// test 3: tests error handling
 
 #include "Graph.h"
 
-// the performance of this test heavily depends on the underlying data structure
-// if sorting is happening during runtime then problems will occur.
-
-// also relies on the iterator. 
-
 int main() {
-	
-	unsigned int totalNumbers = 100;
-	
-	// use totalNumbers required as the seed for the random
-	// number generator. 
-	std::mt19937 mt(totalNumbers);
-	std::uniform_int_distribution<unsigned int> dist(1, totalNumbers * 5);
 
-	// make a graph
-	gdwg::Graph<unsigned int,int> g;
+    // create 3 graphs
+    gdwg::Graph<int,int> g;
+    gdwg::Graph<std::string,double> g2{};
+    gdwg::Graph<std::shared_ptr<int>,std::string> g3{};
 
-	// insert random numbers into the sort object
-	for (unsigned int i=0; i < totalNumbers; ++i) {
-		g.addNode(dist(mt));
-	}
-	
-	// delete some random nodes.
-	for (unsigned int i=0; i < (totalNumbers / 2); ++i) {
-		g.deleteNode(dist(mt));
-	}
-	
-	// insert some more random numbers
-	for (unsigned int i=0; i < totalNumbers; ++i) {
-		g.addNode(dist(mt));
-	}
-	
-	// We don't have iterators. So we iterate the node values
-	// by using the output of printNodes(), for testing purposes.
-        std::stringstream ss;
+    // add some nodes to each graph.
+    g.addNode(1);
+    int i = 2;
+    g.addNode(i);
+    double d = 3.41;
+    g.addNode(static_cast<int>(d));
 
-        //change the underlying buffer and save the old buffer
-        auto old_buf = std::cout.rdbuf(ss.rdbuf()); 
+    g2.addNode("Hello");
+    std::string s = "world";
+    g2.addNode(s);
 
-	g.printNodes();
+    std::shared_ptr<int> sp = std::make_shared<int>(5);
+    g3.addNode(sp);
+    g3.addNode(std::make_shared<int>(6));
 
-	std::cout.rdbuf(old_buf); //reset
-	
-	std::vector<unsigned int> nodeValues;
-	unsigned int i;
-	while (ss >> i) {
-		nodeValues.push_back(i);
-	}
+    // try to add some duplicated data
+    i = 1;
+    std::cout << "testing adding duplicate data" << std::endl;
+    std::cout << std::boolalpha << g.addNode(i) << std::endl;
+    std::cout << g2.addNode("Hello") << std::endl;
+    std::cout << g3.addNode(sp) << " " << g3.addNode(std::make_shared<int>(6)) << std::endl;
 
-	// END of ITERATION
-	
-	// shuffle over the set
-	std::shuffle(nodeValues.begin(), nodeValues.end(), std::default_random_engine(1));
-	
-	// insert some edges 
-	for (unsigned int i = 0; i < nodeValues.size() - 4; i += 4) {
-		g.addEdge(nodeValues[i], nodeValues[i+1], dist(mt));
-		g.addEdge(nodeValues[i], nodeValues[i+2], dist(mt));
-		g.addEdge(nodeValues[i], nodeValues[i+3], dist(mt));
-	}
-	
-	// print one of the edges. 
-	g.printEdges(nodeValues[4]);
-	
+    // add some edges
+    g.addEdge(2,1,3);
+    int j = 3;
+    g.addEdge(i,j,1);
+    g2.addEdge("Hello","world",d);
+
+    std::cout << "testing adding duplicate edges" << std::endl;
+    // try to add some duplicated edges
+    std::cout << g.addEdge(2,1,3) << std::endl;
+    // try to add an edge with a different weight
+    std::cout << g.addEdge(2,1,2) << std::endl;
+
+    std::cout << "testing adding edges between nodes not in the graph" << std::endl;
+    // try to add an edge to somewhere not in the graph
+    try {
+        g.addEdge(7,1,3);
+    } catch( const std::exception &ex ) {
+        //std::cerr << ex.what() << std::endl;
+        std::cout << "exception caught" << std::endl;
+    }
+    try {
+        g.addEdge(2,7,3);
+    } catch( const std::exception &ex ) {
+        std::cout << "exception caught" << std::endl;
+    }
+
+    std::cout << "testing isConnected" << std::endl;
+    try {
+        std::cout << g2.isConnected("world","Hello") << std::endl;
+        std::cout << g2.isConnected("hello","pluto") << std::endl;
+    } catch( const std::exception &ex ) {
+        std::cout << "exception caught" << std::endl;
+    }
+
+    std::cout << "testing print with an unknown node" << std::endl;
+    try {
+        g.printEdges(5);
+    } catch( const std::exception &ex ) {
+        std::cout << "exception caught" << std::endl;
+    }
+
 }
 

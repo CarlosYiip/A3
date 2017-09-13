@@ -1,74 +1,53 @@
-#include <random>
-#include <vector>
-#include <set>
-#include <algorithm>
+//
+// Created by carlos on 9/13/17.
+//
+// test 4: tests data integrity
 
 #include "Graph.h"
 
-// the performance of this test heavily depends on the underlying data structure
-// if sorting is happening during runtime then problems will occur.
-
-// tests replace
-
 int main() {
-	
-	unsigned int totalNumbers = 50;
-	
-	// use totalNumbers required as the seed for the random
-	// number generator. 
-	std::mt19937 mt(totalNumbers);
-	std::uniform_int_distribution<unsigned int> dist(1, totalNumbers * 5);
 
-	// make a graph
-	gdwg::Graph<unsigned int,int> g;
+    gdwg::Graph<std::string,int> gCopy;
 
-	std::set<unsigned int> numSet;
+    // create some data to store as nodes.
+    std::string s = "a";
+    std::string t = "b";
+    std::string u = "c";
 
-	// insert random numbers into the sort object
-	for (unsigned int i=0; i < totalNumbers * 2; ++i) {
-		unsigned int num = dist(mt); 
-		numSet.insert(num);
-		g.addNode(num);
-	}
-	
-	// iterate over the nodes to create a set of nodes. 
-	std::vector<unsigned int> nodeValues;
-	for (unsigned int n : numSet) {
-		nodeValues.push_back(n);
-	}
-	
-	// shuffle over the set
-	std::shuffle(nodeValues.begin(), nodeValues.end(), std::default_random_engine(1));
-	
-	std::vector<unsigned int> nodesWithEdges;
-	
-	// insert some edges 
-	for (unsigned int i = 0; i < nodeValues.size() - 4; i += 4) {
-		g.addEdge(nodeValues[i], nodeValues[i+1], dist(mt));
-		g.addEdge(nodeValues[i], nodeValues[i+2], dist(mt));
-		g.addEdge(nodeValues[i], nodeValues[i+3], dist(mt));
-		if (g.isNode(nodeValues[i])) nodesWithEdges.push_back(nodeValues[i]);
-	}
-	
-	unsigned int toCheck = 0;
-	
-	// replace some random nodes.
-	for (unsigned int i=0; i < (totalNumbers); ++i) {
-		unsigned int oldVal = dist(mt); 
-		unsigned int newVal = dist(mt); 
-		try {
-			if (toCheck == 0 && std::find(nodesWithEdges.begin(),nodesWithEdges.end(),oldVal) != nodesWithEdges.end()) {
-				g.printEdges(oldVal);	// print the old edges before the replace. 
-				toCheck = newVal;
-			}
-			g.replace(oldVal,newVal);
-		} catch (...) {
-			// silently continue.
-		}
-	}
-	
-	// print one of the edges. 
-	g.printEdges(toCheck);
-	
+    // add this data into the graph
+    gCopy.addNode(s);
+    gCopy.addNode(t);
+    gCopy.addNode(u);
+
+    gCopy.addEdge(u,t,1);
+    gCopy.addEdge(u,t,2);
+
+    std::cout << "Graph g before attempted change" << std::endl;
+    gCopy.printNodes();
+    // change the value of t and make sure that the graph still prints out the original value
+    t = "d";
+    std::cout << "Graph g after attempted change" << std::endl;
+    gCopy.printNodes();
+
+    gdwg::Graph<std::shared_ptr<std::string>,std::shared_ptr<int>> gPtr;
+    std::shared_ptr<std::string> sPtr = std::make_shared<std::string>("a");
+    std::shared_ptr<std::string> tPtr = std::make_shared<std::string>("b");
+    std::shared_ptr<std::string> uPtr = std::make_shared<std::string>("c");
+    gPtr.addNode(sPtr);
+    gPtr.addNode(tPtr);
+    gPtr.addNode(uPtr);
+
+    // add an edge between u and t
+    gPtr.addEdge(uPtr,tPtr,std::make_shared<int>(1));
+    // add a second edge between u and t with a different weight
+    gPtr.addEdge(uPtr,tPtr,std::make_shared<int>(2));
+
+    // change the value of the data in the ptr
+    *tPtr = "d";
+
+    std::cout << "Confirming that data has changed if we are using ptrs" << std::endl;
+    // this should have updated in the graph as well as it is a pointer.
+    // can confirm this using isNode
+    std::cout << std::boolalpha << gCopy.isNode(t) << " " << gPtr.isNode(tPtr) << std::endl;
 }
 

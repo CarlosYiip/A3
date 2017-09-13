@@ -1,8 +1,0 @@
-Edges attached to Node 2124
-1150 254
-1395 645
-1004 666
-Edges attached to Node 644
-1150 254
-1395 645
-1004 666

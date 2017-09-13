@@ -18,7 +18,7 @@ namespace gdwg {
     public:
         Graph() = default;
 
-        Graph(const Graph&) = default;
+        Graph(const Graph&);
 
         Graph(Graph&&) = default;
 
@@ -36,7 +36,7 @@ namespace gdwg {
 
         void deleteNode(const N&) noexcept;
 
-        void deleteEdge(const N&, const N&) noexcept;
+        void deleteEdge(const N&, const N&, const E&) noexcept;
 
         void clear() noexcept;
 
@@ -50,11 +50,11 @@ namespace gdwg {
 
     private:
         class Node {
-            friend bool operator<(const Node &rhs, const Node &lhs) {
-                if (rhs.get_out_degree() < lhs.get_out_degree()) {
+            friend bool operator<(const Node &lhs, const Node &rhs) {
+                if (lhs.get_out_degree() < rhs.get_out_degree()) {
                     return true;
-                } else if (rhs.get_out_degree() == lhs.get_out_degree()) {
-                    return rhs.get_data() < lhs.get_data();
+                } else if (lhs.get_out_degree() == rhs.get_out_degree()) {
+                    return lhs.get_data() < rhs.get_data();
                 } else {
                     return false;
                 }
@@ -66,6 +66,14 @@ namespace gdwg {
 
         public:
             Node(const N&);
+
+            Node(const Node&);
+
+            Node(Node&&);
+
+            Node& operator=(const Node&);
+
+            Node& operator=(Node&&);
 
             const N& get_data() const;
 
@@ -83,10 +91,6 @@ namespace gdwg {
 
             void dec_out_degree();
 
-            void set_in_degree(unsigned);
-
-            void set_out_degree(unsigned);
-
         private:
             std::shared_ptr<N> data_ptr;
             unsigned in_degree = 0u;
@@ -99,7 +103,9 @@ namespace gdwg {
                 if (rhs.get_weight() < lhs.get_weight()) {
                     return true;
                 } else if (rhs.get_weight() == lhs.get_weight()) {
-                    return rhs.get_dst_data() < lhs.get_dst_data();
+                    const std::shared_ptr<Node> rhs_dst_node_sp = rhs.get_src_wp().lock();
+                    const std::shared_ptr<Node> lhs_dst_node_sp = lhs.get_src_wp().lock();
+                    return rhs_dst_node_sp < lhs_dst_node_sp;
                 } else {
                     return false;
                 }
@@ -128,6 +134,10 @@ namespace gdwg {
 
             std::weak_ptr<Node>& get_dst_wp();
 
+            const std::weak_ptr<Node>& get_src_wp() const;
+
+            const std::weak_ptr<Node>& get_dst_wp() const;
+
         private:
             std::weak_ptr<Node> src_ptr;
             std::weak_ptr<Node> dst_ptr;
@@ -139,7 +149,6 @@ namespace gdwg {
         std::list<Edge> edges;
     };
 
-
-    #include "Graph.tem"
+    #include "Graph.cpp"
 };
 #endif //A3_GRAPH_H

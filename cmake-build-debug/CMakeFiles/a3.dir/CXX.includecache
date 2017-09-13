@@ -6,7 +6,9 @@
 
 #IncludeRegexTransform: 
 
-/Users/carlosye/Desktop/COMP6771/a3/Graph.h
+/Users/carlos/Desktop/a3/Graph.cpp
+
+/Users/carlos/Desktop/a3/Graph.h
 list
 -
 memory
@@ -15,12 +17,10 @@ iostream
 -
 algorithm
 -
-Graph.tem
-/Users/carlosye/Desktop/COMP6771/a3/Graph.tem
+Graph.cpp
+/Users/carlos/Desktop/a3/Graph.cpp
 
-/Users/carlosye/Desktop/COMP6771/a3/Graph.tem
-
-/Users/carlosye/Desktop/COMP6771/a3/main.cpp
+/Users/carlos/Desktop/a3/main.cpp
 Graph.h
-/Users/carlosye/Desktop/COMP6771/a3/Graph.h
+/Users/carlos/Desktop/a3/Graph.h
 
