@@ -22,7 +22,7 @@ namespace gdwg {
 
         Graph(Graph&&) = default;
 
-        Graph& operator=(const Graph&) = default;
+        Graph& operator=(const Graph&);
 
         Graph& operator=(Graph&&) = default;
 

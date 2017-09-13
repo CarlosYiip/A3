@@ -24,6 +24,36 @@ Graph<N, E>::Graph(const Graph<N, E> &other) {
 	}
 };
 
+template <typename N, typename E>
+Graph<N, E>& Graph<N, E>::operator=(const Graph& other) {
+	if (this != &other) {
+		nodes_sp.clear();
+		edges.clear();
+
+		for (auto it = other.nodes_sp.cbegin(); it != other.nodes_sp.cend(); ++it) {
+			Node new_node {**it};
+			nodes_sp.emplace_back(std::make_shared<Node>(new_node));
+		}
+
+		for (auto it = other.edges.cbegin(); it != other.edges.cend(); ++it) {
+			auto src_it = std::find_if(nodes_sp.cbegin(), nodes_sp.cend(),
+									   [&] (const std::shared_ptr<Node>& sp) {
+										   return sp->get_data() == it->get_src_data();
+									   });
+
+
+			auto dst_it = std::find_if(nodes_sp.cbegin(), nodes_sp.cend(),
+									   [&] (const std::shared_ptr<Node>& sp) {
+										   return sp->get_data() == it->get_dst_data();
+									   });
+
+			Edge new_edge {*src_it, *dst_it, it->get_weight()};
+			edges.emplace_back(new_edge);
+		}
+	}
+	return *this;
+};
+
 
 template <typename N, typename E>
 bool Graph<N, E>::addNode(const N &val) {
@@ -257,16 +287,20 @@ Graph<N, E>::Node::Node(const N &val) : data_ptr{std::make_shared<N>(val)} {};
 
  template <typename N, typename E>
  typename Graph<N, E>::Node& Graph<N, E>::Node::operator=(const typename Graph<N, E>::Node& other) {
-	 in_degree = other.in_degree;
-	 out_degree = other.out_degree;
-	 data_ptr = std::make_shared<N>(other.get_data());
+	 if (this != &other) {
+		 in_degree = other.in_degree;
+		 out_degree = other.out_degree;
+		 data_ptr = std::make_shared<N>(other.get_data());
+	 }
  };
 
  template <typename N, typename E>
  typename Graph<N, E>::Node& Graph<N, E>::Node::operator=(typename Graph<N, E>::Node&& other) {
-	 in_degree = std::move(other.in_degree);
-	 out_degree = std::move(other.out_degree);
-	 data_ptr = std::move(other.data_ptr);
+	 if (this != &other) {
+		 in_degree = std::move(other.in_degree);
+		 out_degree = std::move(other.out_degree);
+		 data_ptr = std::move(other.data_ptr);
+	 }
  };
 
 template <typename N, typename E>
