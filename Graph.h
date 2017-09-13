@@ -5,7 +5,7 @@
 #ifndef A3_GRAPH_H
 #define A3_GRAPH_H
 
-#include <vector>
+#include <list>
 #include <memory>
 #include <iostream>
 #include <algorithm>
@@ -36,7 +36,7 @@ namespace gdwg {
 
         void deleteNode(const N&) noexcept;
 
-        void deleteEdge(const N&, const N&, const E&) noexcept;
+        void deleteEdge(const N&, const N&) noexcept;
 
         void clear() noexcept;
 
@@ -46,11 +46,24 @@ namespace gdwg {
 
         void printNodes() const;
 
-        void printEdges() const;
-
+        void printEdges(const N&) const;
 
     private:
         class Node {
+            friend bool operator<(const Node &rhs, const Node &lhs) {
+                if (rhs.get_out_degree() < lhs.get_out_degree()) {
+                    return true;
+                } else if (rhs.get_out_degree() == lhs.get_out_degree()) {
+                    return rhs.get_data() < lhs.get_data();
+                } else {
+                    return false;
+                }
+            };
+
+            friend bool operator==(const Node &rhs, const Node &lhs) {
+                return rhs.get_data() == lhs.get_data();
+            }
+
         public:
             Node(const N&);
 
@@ -75,29 +88,46 @@ namespace gdwg {
             void set_out_degree(unsigned);
 
         private:
-            std::unique_ptr<N> data_ptr;
+            std::shared_ptr<N> data_ptr;
             unsigned in_degree = 0u;
             unsigned out_degree = 0u;
 
         };
 
         class Edge {
+            friend bool operator<(const Edge &rhs, const Edge &lhs) {
+                if (rhs.get_weight() < lhs.get_weight()) {
+                    return true;
+                } else if (rhs.get_weight() == lhs.get_weight()) {
+                    return rhs.get_dst_data() < lhs.get_dst_data();
+                } else {
+                    return false;
+                }
+            };
+
+            friend bool operator==(const Edge &rhs, const Edge &lhs) {
+                return rhs.get_src_data() == lhs.get_src_data() &&
+                       rhs.get_dst_data() == lhs.get_dst_data() &&
+                       rhs.get_weight() == lhs.get_weight();
+            };
+
         public:
             Edge(const std::shared_ptr<Node>&, const std::shared_ptr<Node>&, const E&);
 
             const N& get_src_data() const;
 
             const N& get_dst_data() const;
-            
+
             const E& get_weight() const;
 
-            const std::weak_ptr<Node>& get_src_ptr() const;
-
-            const std::weak_ptr<Node>& get_dst_ptr() const;
-
             void set_src_node(const std::shared_ptr<Node>&);
-            
+
             void set_dst_node(const std::shared_ptr<Node>&);
+
+            std::weak_ptr<Node>& get_src_wp();
+
+            std::weak_ptr<Node>& get_dst_wp();
+
         private:
             std::weak_ptr<Node> src_ptr;
             std::weak_ptr<Node> dst_ptr;
@@ -105,8 +135,8 @@ namespace gdwg {
 
         };
 
-        std::vector<std::shared_ptr<Node>> nodes_sp;
-        std::vector<Edge> edges;
+        std::list<std::shared_ptr<Node>> nodes_sp;
+        std::list<Edge> edges;
     };
 
 
