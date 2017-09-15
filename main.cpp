@@ -1,31 +1,35 @@
-// test for printNodes()
+// test 8: tests copy construction
 
 #include "Graph.h"
 
 int main() {
+	auto gHeap = new gdwg::Graph<std::string,int>{};
 	
-	// make a graph
-	gdwg::Graph<unsigned int,int> g;
+	// add this data into the graph
+	gHeap->addNode("a");
+	gHeap->addNode("b");
+	gHeap->addNode("c");
+	gHeap->addNode("d");
 	
-	g.addNode(1);
-	g.addNode(2);
-	g.addNode(3);
-	g.addNode(4);
-
-	g.addEdge(1,2,12);
-	g.addEdge(1,3,13);
-	g.addEdge(1,4,14);
-	g.addEdge(2,1,21);
-	g.addEdge(2,3,23);
-	g.addEdge(3,1,31);
-	g.addEdge(3,4,34);
-
-	for (g.begin(); !g.end(); g.next())
-	   std::cout << g.value() << std::endl;
-
-        const auto& cg = g;
-
-	for (cg.begin(); !cg.end(); cg.next())
-	   std::cout << cg.value() << std::endl;
+	gHeap->addEdge("b","a",3);
+	gHeap->addEdge("b","a",5);
+	gHeap->addEdge("b","d",4);
+	gHeap->addEdge("c","a",3);
+	
+	std::cout << "original graph" << std::endl;
+	gHeap->printNodes();
+	gHeap->printEdges("b");
+	
+	auto gHeapCopy = *gHeap;
+	gHeap->deleteNode("a");
+	std::cout << "original graph after delete" << std::endl;
+	gHeap->printNodes();
+	gHeap->printEdges("b");
+	std::cout << "copied graph after delete in other graph" << std::endl;
+	gHeapCopy.printNodes();
+	gHeapCopy.printEdges("b");
+	
+	delete gHeap;
+	std::cout << "copied graph after other graph is deleted" << std::endl;
+	gHeapCopy.printNodes();
 }
-

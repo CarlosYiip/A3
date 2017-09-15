@@ -57,6 +57,8 @@ namespace gdwg {
         const N& value() const;
 
     private:
+        void update() const ;
+
         class Node {
             friend bool operator<(const Node &lhs, const Node &rhs) {
                 if (lhs.get_out_degree() < rhs.get_out_degree()) {
@@ -144,9 +146,8 @@ namespace gdwg {
             E weight;
         };
 
-        std::list<std::shared_ptr<Node>> nodes_sp;
-        std::list<Edge> edges;
-
+        mutable std::list<std::shared_ptr<Node>> nodes_sp;
+        mutable std::list<Edge> edges;
         mutable typename std::list<std::shared_ptr<Node>>::const_iterator const_iter;
     };
 

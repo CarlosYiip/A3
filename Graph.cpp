@@ -4,7 +4,6 @@ Graph<N, E>::Graph(const Graph<N, E> &other) {
 	for (auto it = other.nodes_sp.cbegin(); it != other.nodes_sp.cend(); ++it) {
 		addNode((*it)->get_data());
 	}
-
 	for (auto it = other.edges.cbegin(); it != other.edges.cend(); ++it) {
 		addEdge(it->get_src_data(), it->get_dst_data(), it->get_weight());
 	}
@@ -17,7 +16,6 @@ Graph<N, E>& Graph<N, E>::operator=(const Graph& other) {
 		for (auto it = other.nodes_sp.cbegin(); it != other.nodes_sp.cend(); ++it) {
 			addNode((*it)->get_data());
 		}
-
 		for (auto it = other.edges.cbegin(); it != other.edges.cend(); ++it) {
 			addEdge(it->get_src_data(), it->get_dst_data(), it->get_weight());
 		}	
@@ -25,20 +23,12 @@ Graph<N, E>& Graph<N, E>::operator=(const Graph& other) {
 	return *this;
 };
 
-
 template <typename N, typename E>
 bool Graph<N, E>::addNode(const N &val) {
     if (isNode(val))
     	return false;
-
     std::shared_ptr<Node> new_sp = std::make_shared<Node>(Node {val});
-    auto it = std::lower_bound(nodes_sp.cbegin(), nodes_sp.cend(), new_sp,
-                               [](const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
-                                   return *lhs < *rhs;
-                               });
-
-    nodes_sp.insert(it, new_sp);
-
+	nodes_sp.emplace_back(new_sp);
     return true;
 }
 
@@ -70,13 +60,7 @@ bool Graph<N, E>::addEdge(const N &src, const N &dst, const E &w) {
     (*src_it)->inc_out_degree();
     (*dst_it)->inc_in_degree();
     Edge new_edge{*src_it, *dst_it, w};
-
-    auto it = std::lower_bound(edges.cbegin(), edges.cend(), new_edge);
-    edges.insert(it, new_edge);
-
-	nodes_sp.sort([] (const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
-		return *lhs < *rhs;
-	});
+	edges.emplace_back(new_edge);
 
     return true;
 };
@@ -98,12 +82,6 @@ bool Graph<N, E>::replace(const N &old_data, const N &new_data) {
 		return false;
 
 	(*old_it)->set_data(new_data);
-
-	nodes_sp.sort([] (const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
-		return *lhs < *rhs;
-	});
-
-
 	return true;
 }
 
@@ -118,11 +96,10 @@ void Graph<N, E>::mergeReplace(const N &old_data, const N &new_data) {
 	});
 
 	if (old_it == nodes_sp.end())
-		throw std::runtime_error(std::to_string(old_data) + " is not in the graph");
+		throw std::runtime_error("old node is not in the graph");
 
 	if (new_it == nodes_sp.end())
-		throw std::runtime_error(std::to_string(new_data) + " is not in the graph");
-
+		throw std::runtime_error("new node is not in the graph");
 
 	std::for_each(edges.begin(), edges.end(), [&] (Edge &edge){
 		if (edge.get_src_data() == old_data) {
@@ -135,64 +112,24 @@ void Graph<N, E>::mergeReplace(const N &old_data, const N &new_data) {
         }
 	});
 
-    edges.sort();
-
-    edges.unique();
-
 	nodes_sp.erase(old_it);
 }
 
-
 template <typename N, typename E>
-void Graph<N, E>::deleteNode(const N& d) noexcept {
-	auto it = std::find_if(nodes_sp.cbegin(), nodes_sp.cend(), [&] (const std::shared_ptr<Node>& sp) {
-		return sp->get_data() == d;
-	});
-
-	if (it != nodes_sp.end()) {
-        nodes_sp.erase(it);
-
-        edges.remove_if([](Edge &edge) {
-            std::shared_ptr <Node> src_sp = edge.get_src_wp().lock();
-            std::shared_ptr <Node> dst_sp = edge.get_dst_wp().lock();
-            if (src_sp)
-            	src_sp->dec_out_degree();
-            if (dst_sp)
-            	dst_sp->dec_out_degree();
-            return (!src_sp || !dst_sp);
-        });
-    }
-
-    nodes_sp.sort([] (const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
-		return *lhs < *rhs;
-	});
+void Graph<N, E>::deleteNode(const N& val) noexcept {
+    nodes_sp.remove_if([&val] (std::shared_ptr<Node>& sp) {
+        return sp->get_data() == val;
+    });
 }
 
 template <typename N, typename E>
 void Graph<N, E>::deleteEdge(const N& src, const N& dst, const E& w) noexcept {
-	auto it = std::find_if(edges.begin(), edges.end(), [&] (const Edge& edge) {
+	edges.remove_if([&] (Edge& edge) {
 		return edge.get_src_data() == src &&
 			   edge.get_dst_data() == dst &&
 			   edge.get_weight() == w;
 	});
-	if (it != edges.end()) {
-
-        std::shared_ptr<Node> src_ptr = it->get_src_wp().lock();
-        if (src_ptr)
-            src_ptr->dec_out_degree();
-
-        std::shared_ptr<Node> dst_ptr = it->get_dst_wp().lock();
-        if (dst_ptr)
-            dst_ptr->dec_in_degree();
-
-		edges.erase(it);
-	}
-
-	nodes_sp.sort([] (const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
-		return *lhs < *rhs;
-	});
 }
-
 
 template <typename N, typename E>
 void Graph<N, E>::clear() noexcept {
@@ -202,10 +139,9 @@ void Graph<N, E>::clear() noexcept {
 
 template <typename N, typename E>
 bool Graph<N, E>::isNode(const N& val) const {
-	auto it = std::find_if(nodes_sp.cbegin(), nodes_sp.cend(), [&] (const std::shared_ptr<Node> &sp) {
+	auto it = std::find_if(nodes_sp.cbegin(), nodes_sp.cend(), [&val] (const std::shared_ptr<Node> &sp) {
 		return sp->get_data() == val;
 	});
-
 	return it != nodes_sp.cend();
 }
 
@@ -227,9 +163,9 @@ bool Graph<N, E>::isConnected(const N &src, const N &dst) const {
 
 template <typename N, typename E>
 void Graph<N, E>::printNodes() const {
+	update();
     std::for_each(nodes_sp.cbegin(), nodes_sp.cend(), [] (const std::shared_ptr<Node>& sp) {
 		std::cout << sp->get_data() << '\n';
-       // std::cout << sp->get_data() << " in: " << sp->get_in_degree() << " out: " << sp->get_out_degree() << '\n';
     });
 };
 
@@ -238,6 +174,7 @@ void Graph<N, E>::printEdges(const N& val) const {
     if (!isNode(val))
         throw std::runtime_error("this node is not in the graph");
 
+	update();
     std::cout << "Edges attached to Node " << val << '\n';
     bool has_dst_nodes = false;
 
@@ -263,6 +200,31 @@ void Graph<N, E>::next() const { ++const_iter; }
 
 template <typename N, typename E>
 const N& Graph<N, E>::value() const { return (*const_iter)->get_data(); }
+
+template <typename N, typename E>
+void Graph<N, E>::update() const {
+	edges.remove_if([] (Edge &edge) {
+		if (!edge.get_src_wp().lock() || !edge.get_dst_wp().lock()) {
+
+			std::shared_ptr<Node> src_ptr = edge.get_src_wp().lock();
+			if (src_ptr)
+				src_ptr->dec_out_degree();
+
+			std::shared_ptr<Node> dst_ptr = edge.get_dst_wp().lock();
+			if (dst_ptr)
+				dst_ptr->dec_in_degree();
+
+			return true;
+		}
+		return false;
+	});
+	edges.sort();
+	edges.unique();
+
+	nodes_sp.sort([] (const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
+		return *lhs < *rhs;
+	});
+};
 
 /************************************************* Node **************************************************/
 
@@ -293,7 +255,6 @@ void Graph<N, E>::Node::dec_in_degree() { --in_degree; };
 template <typename N, typename E>
 void Graph<N, E>::Node::dec_out_degree() { --out_degree; };
 
-
 /************************************************* Edge **************************************************/
 
 template <typename N, typename E>
@@ -320,9 +281,8 @@ std::weak_ptr<typename Graph<N, E>::Node>& Graph<N, E>::Edge::get_src_wp() { ret
 template <typename N, typename E>
 std::weak_ptr<typename Graph<N, E>::Node>& Graph<N, E>::Edge::get_dst_wp() { return dst_ptr; }
 
+template <typename N, typename E>
+const std::weak_ptr<typename Graph<N, E>::Node>& Graph<N, E>::Edge::get_src_wp() const { return src_ptr; }
 
- template <typename N, typename E>
- const std::weak_ptr<typename Graph<N, E>::Node>& Graph<N, E>::Edge::get_src_wp() const { return src_ptr; }
-
- template <typename N, typename E>
- const std::weak_ptr<typename Graph<N, E>::Node>& Graph<N, E>::Edge::get_dst_wp() const { return dst_ptr; }
+template <typename N, typename E>
+const std::weak_ptr<typename Graph<N, E>::Node>& Graph<N, E>::Edge::get_dst_wp() const { return dst_ptr; }
