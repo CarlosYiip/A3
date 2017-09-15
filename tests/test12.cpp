@@ -20,12 +20,6 @@ int main() {
 	g.addEdge(3,1,31);
 	g.addEdge(3,4,34);
 
-	for (g.begin(); !g.end(); g.next())
-	   std::cout << g.value() << std::endl;
-
-        const auto& cg = g;
-
-	for (cg.begin(); !cg.end(); cg.next())
-	   std::cout << cg.value() << std::endl;
+	g.printNodes();
 }
 

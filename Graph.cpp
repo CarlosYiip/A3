@@ -1,55 +1,26 @@
-
 /************************************************* Graph **************************************************/
 template <typename N, typename E>
 Graph<N, E>::Graph(const Graph<N, E> &other) {
 	for (auto it = other.nodes_sp.cbegin(); it != other.nodes_sp.cend(); ++it) {
-		Node new_node {**it};
-		nodes_sp.emplace_back(std::make_shared<Node>(new_node));
+		addNode((*it)->get_data());
 	}
 
 	for (auto it = other.edges.cbegin(); it != other.edges.cend(); ++it) {
-		auto src_it = std::find_if(nodes_sp.cbegin(), nodes_sp.cend(),
-								   [&] (const std::shared_ptr<Node>& sp) {
-			return sp->get_data() == it->get_src_data();
-								   });
-
-
-		auto dst_it = std::find_if(nodes_sp.cbegin(), nodes_sp.cend(),
-								   [&] (const std::shared_ptr<Node>& sp) {
-									   return sp->get_data() == it->get_dst_data();
-								   });
-
-		Edge new_edge {*src_it, *dst_it, it->get_weight()};
-		edges.emplace_back(new_edge);
+		addEdge(it->get_src_data(), it->get_dst_data(), it->get_weight());
 	}
 };
 
 template <typename N, typename E>
 Graph<N, E>& Graph<N, E>::operator=(const Graph& other) {
 	if (this != &other) {
-		nodes_sp.clear();
-		edges.clear();
-
+		clear();
 		for (auto it = other.nodes_sp.cbegin(); it != other.nodes_sp.cend(); ++it) {
-			Node new_node {**it};
-			nodes_sp.emplace_back(std::make_shared<Node>(new_node));
+			addNode((*it)->get_data());
 		}
 
 		for (auto it = other.edges.cbegin(); it != other.edges.cend(); ++it) {
-			auto src_it = std::find_if(nodes_sp.cbegin(), nodes_sp.cend(),
-									   [&] (const std::shared_ptr<Node>& sp) {
-										   return sp->get_data() == it->get_src_data();
-									   });
-
-
-			auto dst_it = std::find_if(nodes_sp.cbegin(), nodes_sp.cend(),
-									   [&] (const std::shared_ptr<Node>& sp) {
-										   return sp->get_data() == it->get_dst_data();
-									   });
-
-			Edge new_edge {*src_it, *dst_it, it->get_weight()};
-			edges.emplace_back(new_edge);
-		}
+			addEdge(it->get_src_data(), it->get_dst_data(), it->get_weight());
+		}	
 	}
 	return *this;
 };
@@ -184,9 +155,17 @@ void Graph<N, E>::deleteNode(const N& d) noexcept {
         edges.remove_if([](Edge &edge) {
             std::shared_ptr <Node> src_sp = edge.get_src_wp().lock();
             std::shared_ptr <Node> dst_sp = edge.get_dst_wp().lock();
+            if (src_sp)
+            	src_sp->dec_out_degree();
+            if (dst_sp)
+            	dst_sp->dec_out_degree();
             return (!src_sp || !dst_sp);
         });
     }
+
+    nodes_sp.sort([] (const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
+		return *lhs < *rhs;
+	});
 }
 
 template <typename N, typename E>
@@ -208,6 +187,10 @@ void Graph<N, E>::deleteEdge(const N& src, const N& dst, const E& w) noexcept {
 
 		edges.erase(it);
 	}
+
+	nodes_sp.sort([] (const std::shared_ptr<Node> &lhs, const std::shared_ptr<Node> &rhs) {
+		return *lhs < *rhs;
+	});
 }
 
 
@@ -246,7 +229,7 @@ template <typename N, typename E>
 void Graph<N, E>::printNodes() const {
     std::for_each(nodes_sp.cbegin(), nodes_sp.cend(), [] (const std::shared_ptr<Node>& sp) {
 		std::cout << sp->get_data() << '\n';
-//        std::cout << sp->get_data() << " in: " << sp->get_in_degree() << " out: " << sp->get_out_degree() << '\n';
+       // std::cout << sp->get_data() << " in: " << sp->get_in_degree() << " out: " << sp->get_out_degree() << '\n';
     });
 };
 
@@ -269,39 +252,22 @@ void Graph<N, E>::printEdges(const N& val) const {
         std::cout << "(null)" << '\n';
 };
 
+template <typename N, typename E>
+void Graph<N, E>::begin() const { const_iter = nodes_sp.cbegin(); }
+
+template <typename N, typename E>
+bool Graph<N, E>::end() const { return const_iter == nodes_sp.cend(); }
+
+template <typename N, typename E>
+void Graph<N, E>::next() const { ++const_iter; }
+
+template <typename N, typename E>
+const N& Graph<N, E>::value() const { return (*const_iter)->get_data(); }
+
 /************************************************* Node **************************************************/
 
 template <typename N, typename E>
 Graph<N, E>::Node::Node(const N &val) : data_ptr{std::make_shared<N>(val)} {};
-
- template <typename N, typename E>
- Graph<N, E>::Node::Node(const typename Graph<N, E>::Node& other) : in_degree{other.in_degree}, out_degree{other.out_degree} {
-	 N new_data = other.get_data();
-	 data_ptr = std::make_shared<N>(new_data);
- }
-
- template <typename N, typename E>
- Graph<N, E>::Node::Node(typename Graph<N, E>::Node&& other) :
-		 in_degree{std::move(other.in_degree)}, out_degree{std::move(other.out_degree)},
-		 data_ptr{std::move(other.data_ptr)} {}
-
- template <typename N, typename E>
- typename Graph<N, E>::Node& Graph<N, E>::Node::operator=(const typename Graph<N, E>::Node& other) {
-	 if (this != &other) {
-		 in_degree = other.in_degree;
-		 out_degree = other.out_degree;
-		 data_ptr = std::make_shared<N>(other.get_data());
-	 }
- };
-
- template <typename N, typename E>
- typename Graph<N, E>::Node& Graph<N, E>::Node::operator=(typename Graph<N, E>::Node&& other) {
-	 if (this != &other) {
-		 in_degree = std::move(other.in_degree);
-		 out_degree = std::move(other.out_degree);
-		 data_ptr = std::move(other.data_ptr);
-	 }
- };
 
 template <typename N, typename E>
 const N &Graph<N, E>::Node::get_data() const { return *data_ptr; };
@@ -360,12 +326,3 @@ std::weak_ptr<typename Graph<N, E>::Node>& Graph<N, E>::Edge::get_dst_wp() { ret
 
  template <typename N, typename E>
  const std::weak_ptr<typename Graph<N, E>::Node>& Graph<N, E>::Edge::get_dst_wp() const { return dst_ptr; }
-
-
-
-
-
-
-
-
-

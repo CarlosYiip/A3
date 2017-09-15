@@ -48,6 +48,14 @@ namespace gdwg {
 
         void printEdges(const N&) const;
 
+        void begin() const;
+
+        bool end() const;
+
+        void next() const;
+
+        const N& value() const;
+
     private:
         class Node {
             friend bool operator<(const Node &lhs, const Node &rhs) {
@@ -66,14 +74,6 @@ namespace gdwg {
 
         public:
             Node(const N&);
-
-            Node(const Node&);
-
-            Node(Node&&);
-
-            Node& operator=(const Node&);
-
-            Node& operator=(Node&&);
 
             const N& get_data() const;
 
@@ -142,11 +142,12 @@ namespace gdwg {
             std::weak_ptr<Node> src_ptr;
             std::weak_ptr<Node> dst_ptr;
             E weight;
-
         };
 
         std::list<std::shared_ptr<Node>> nodes_sp;
         std::list<Edge> edges;
+
+        mutable typename std::list<std::shared_ptr<Node>>::const_iterator const_iter;
     };
 
     #include "Graph.cpp"
